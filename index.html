@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Henry's Jobs - Educational Block Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #header {
+            background: linear-gradient(90deg, #FF6B6B, #FF8E72);
+            padding: 15px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #header h1 {
+            font-size: 2em;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        #stats {
+            display: flex;
+            gap: 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        #mainContainer {
+            display: flex;
+            flex: 1;
+            gap: 15px;
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        #jobPanel {
+            width: 300px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #jobPanel h2 {
+            color: #FF6B6B;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .jobButton {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .jobButton:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .jobButton.active {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E72);
+        }
+
+        .jobButton.completed {
+            opacity: 0.5;
+        }
+
+        #gameArea {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        #gameInfo {
+            background: #f0f0f0;
+            padding: 15px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        #gameInfo h3 {
+            color: #FF6B6B;
+            margin-bottom: 8px;
+        }
+
+        #gameInfo p {
+            color: #666;
+            font-size: 0.95em;
+            margin: 5px 0;
+        }
+
+        #objectivesList {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .objective {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+            font-size: 0.9em;
+        }
+
+        .objective.completed {
+            background: #6BCB77;
+            color: white;
+            border-color: #6BCB77;
+        }
+
+        #gameContainer {
+            flex: 1;
+            position: relative;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #controls {
+            background: #2C3E50;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        #achievementPopup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            text-align: center;
+            display: none;
+            animation: popIn 0.5s ease-out;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        #achievementPopup.show {
+            display: block;
+        }
+
+        .achievementIcon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .achievementTitle {
+            font-size: 1.8em;
+            color: #FF6B6B;
+            margin: 15px 0;
+        }
+
+        .achievementReward {
+            font-size: 1.5em;
+            color: #6BCB77;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 1200px) {
+            #mainContainer {
+                flex-direction: column;
+            }
+
+            #jobPanel {
+                width: 100%;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>🎮 Henry's Jobs</h1>
+        <div id="stats">
+            <div>💰 Money: <span id="moneyDisplay">$0</span></div>
+            <div>⭐ Level: <span id="levelDisplay">1</span></div>
+            <div>🎯 Jobs: <span id="jobsDisplay">0/9</span></div>
+        </div>
+    </div>
+
+    <div id="mainContainer">
+        <div id="jobPanel">
+            <h2>Select Job</h2>
+            <div id="jobList"></div>
+        </div>
+
+        <div id="gameArea">
+            <div id="gameInfo">
+                <h3 id="jobTitle">Welcome to Henry's Jobs!</h3>
+                <p id="jobFact">Select a job to get started</p>
+                <ul id="objectivesList"></ul>
+            </div>
+            <div id="gameContainer">
+                <canvas id="gameCanvas"></canvas>
+            </div>
+            <div id="controls">
+                ⬅️ A/← Move Left | ➡️ D/→ Move Right | ⬆️ W/SPACE Jump | 🖱️ Click to Place Block | 🧹 R to Clear
+            </div>
+        </div>
+    </div>
+
+    <div id="achievementPopup">
+        <div class="achievementIcon" id="achievementIcon">⭐</div>
+        <div class="achievementTitle" id="achievementTitle">Job Complete!</div>
+        <p id="achievementText"></p>
+        <div class="achievementReward" id="achievementReward">+$50</div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
